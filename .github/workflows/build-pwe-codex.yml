@@ -1,0 +1,68 @@
+# Builds PWE Codex for Windows, macOS and Linux.
+# Run it from the Actions tab: "Build PWE Codex" > "Run workflow".
+# The finished programs appear as downloads ("artifacts") on the run's page.
+name: Build PWE Codex
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            exe: codex.exe
+            out: pwe-codex.exe
+          - name: macos
+            os: macos-latest
+            exe: codex
+            out: pwe-codex
+          - name: linux
+            os: ubuntu-latest
+            exe: codex
+            out: pwe-codex
+    defaults:
+      run:
+        working-directory: codex-rs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (version from rust-toolchain.toml)
+        shell: bash
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustc --version
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev libcap-dev
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: codex-rs
+
+      - name: Build PWE Codex
+        shell: bash
+        run: cargo build --release -p codex-cli --bin codex
+
+      - name: Rename to pwe-codex
+        shell: bash
+        run: |
+          mkdir -p ../dist
+          cp "target/release/${{ matrix.exe }}" "../dist/${{ matrix.out }}"
+          cp ../LICENSE ../NOTICE ../dist/
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: pwe-codex-${{ matrix.name }}
+          path: dist/
