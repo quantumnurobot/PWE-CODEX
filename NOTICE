@@ -1,0 +1,17 @@
+OpenAI Codex
+Copyright 2025 OpenAI
+
+This project includes code derived from [Ratatui](https://github.com/ratatui/ratatui), licensed under the MIT license.
+Copyright (c) 2016-2022 Florian Dehau
+Copyright (c) 2023-2025 The Ratatui Developers
+
+---
+
+PWE Codex
+Modifications Copyright 2026 Pakwone Application.
+
+PWE Codex is a modified version of OpenAI Codex CLI (https://github.com/openai/codex),
+licensed under the Apache License, Version 2.0. Changes made by Pakwone Application:
+the product name shown in the terminal interface and output, an added `pwe-codex`
+command name, and this README. "OpenAI" and "Codex" are names of their owner; Pakwone
+Application is not affiliated with or endorsed by OpenAI.
