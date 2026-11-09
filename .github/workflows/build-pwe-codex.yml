@@ -8,6 +8,12 @@ on:
   push:
     tags: ["v*"]
 
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_RELEASE_DEBUG: "0"
+  CARGO_PROFILE_RELEASE_STRIP: "symbols"
+
 jobs:
   build:
     name: Build (${{ matrix.name }})
@@ -19,21 +25,41 @@ jobs:
         include:
           - name: windows
             os: windows-latest
+            target: x86_64-pc-windows-msvc
             exe: codex.exe
             out: pwe-codex.exe
           - name: macos
             os: macos-latest
+            target: aarch64-apple-darwin
             exe: codex
             out: pwe-codex
           - name: linux
             os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             exe: codex
             out: pwe-codex
     defaults:
       run:
         working-directory: codex-rs
     steps:
+      - name: Allow long file paths (Windows)
+        if: runner.os == 'Windows'
+        working-directory: .
+        run: git config --global core.longpaths true
+
+      - name: Free disk space (Linux)
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
       - uses: actions/checkout@v4
+
+      - name: Use OpenAI's pre-built V8 engine (checksums verified)
+        uses: ./.github/actions/setup-rusty-v8
+        with:
+          target: ${{ matrix.target }}
 
       - name: Install Rust (version from rust-toolchain.toml)
         shell: bash
