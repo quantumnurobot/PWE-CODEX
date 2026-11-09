@@ -62,7 +62,7 @@ jobs:
           cp ../LICENSE ../NOTICE ../dist/
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pwe-codex-${{ matrix.name }}
           path: dist/
